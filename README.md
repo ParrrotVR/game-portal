@@ -21,6 +21,10 @@ Large game files are split into 20MB chunks to work around GitHub's 25MB limit. 
 - `games/scritchy-scratchy/Build/WebGL.wasm.br.part.001` (20MB)
 - `games/scritchy-scratchy/Build/WebGL.wasm.br.part.002` (20MB)
 - `games/scritchy-scratchy/Build/WebGL.wasm.br.part.003` (16.7MB)
+- `games/epicmine/Build/dc5816d0674db347069a3818c4eebb18.wasm.br.part.001` (20MB)
+- `games/epicmine/Build/dc5816d0674db347069a3818c4eebb18.wasm.br.part.002` (19.6MB)
+- `games/epicmine/Build/f3f6b0ef131f67204364f79b8ba5fb91.data.br.part.001` (20MB)
+- `games/epicmine/Build/f3f6b0ef131f67204364f79b8ba5fb91.data.br.part.002` (4.3MB)
 
 ### ✨ Automatic Process:
 1. **Visit the website** - Files are automatically downloaded and reassembled

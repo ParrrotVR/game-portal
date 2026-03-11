@@ -9,7 +9,9 @@ class FileReassembler {
             'games/outhold/index.side.wasm',
             'games/gscriptlearn/index.pck',
             'games/reacticore/Build/Reacticore_20_02_26.wasm.br',
-            'games/scritchy-scratchy/Build/WebGL.wasm.br'
+            'games/scritchy-scratchy/Build/WebGL.wasm.br',
+            'games/epicmine/Build/dc5816d0674db347069a3818c4eebb18.wasm.br',
+            'games/epicmine/Build/f3f6b0ef131f67204364f79b8ba5fb91.data.br'
         ];
         this.checkInterval = null;
     }
