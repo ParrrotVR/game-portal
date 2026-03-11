@@ -45,6 +45,17 @@ class FileReassembler {
         const baseName = filePath.replace(/^.*\//, ''); // Get filename without path
         const pathDir = filePath.replace(/\/[^\/]*$/, ''); // Get directory
         
+        // First check if the main file exists (already reassembled)
+        try {
+            const response = await fetch(filePath, { method: 'HEAD' });
+            if (response.ok) {
+                console.log(`   ✅ File already reassembled: ${filePath}`);
+                return []; // Return empty array - no need to reassemble
+            }
+        } catch (error) {
+            // File doesn't exist, look for split parts
+        }
+        
         for (let i = 1; i <= 10; i++) {
             const partName = `${baseName}.part.${i.toString().padStart(3, '0')}`;
             const partPath = `${pathDir}/${partName}`;
