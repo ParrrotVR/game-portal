@@ -2,9 +2,9 @@
 
 A multi-game web portal featuring HTML5 games built with various engines.
 
-## 🎮 Game Files - Split for GitHub
+## 🎮 Game Files - Automatic Reassembly
 
-Large game files are split into 20MB chunks to work around GitHub's 25MB limit.
+Large game files are split into 20MB chunks to work around GitHub's 25MB limit. **The website automatically reassembles them when loaded!**
 
 ### 📁 Split Files Included:
 - `games/feed-the-void/index.wasm.part.001` (20MB)
@@ -14,33 +14,20 @@ Large game files are split into 20MB chunks to work around GitHub's 25MB limit.
 - `games/gscriptlearn/index.pck.part.001` (20MB)
 - `games/gscriptlearn/index.pck.part.002` (18.4MB)
 
-### 🔄 Reassemble Game Files:
-**Option 1: Automatic (Recommended)**
+### ✨ Automatic Process:
+1. **Visit the website** - Files are automatically downloaded and reassembled
+2. **Stored locally** - Files are cached in browser storage for instant loading
+3. **Seamless gaming** - No manual steps required!
+
+### 🔧 Manual Reassembly (Optional):
+If you want to reassemble files locally for development:
 ```bash
-# Run the automatic reassembly script
+# Automatic reassembly
 python join_all_files.py
-# Or on Windows: join_all_files.bat
-```
 
-**Option 2: Manual**
-```bash
-# Reassemble each file individually
+# Or individual files
 python split_files.py join "games/feed-the-void/index.wasm"
-python split_files.py join "games/outhold/index.pck"
-python split_files.py join "games/gscriptlearn/index.pck"
 ```
-
-**Option 3: Manual Copy**
-1. Combine split files in order:
-   ```bash
-   # Windows
-   copy /b games\feed-the-void\index.wasm.part.001 + games\feed-the-void\index.wasm.part.002 games\feed-the-void\index.wasm
-   
-   # Mac/Linux
-   cat games/feed-the-void/index.wasm.part.001 games/feed-the-void/index.wasm.part.002 > games/feed-the-void/index.wasm
-   ```
-2. Repeat for other split files
-3. Delete the .part files after successful reassembly
 
 ## 🚀 Quick Start
 
