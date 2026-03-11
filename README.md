@@ -36,9 +36,19 @@ Large game files are split into 20MB chunks to work around GitHub's 25MB limit.
 ### 🔧 Manual Reassembly (Required for Local Development):
 **For local development, you MUST reassemble the split files:**
 
+**🚀 Quick Start (Recommended):**
+```bash
+# Windows - Reassemble all files and start server
+start_dev.bat
+
+# Or Mac/Linux - Reassemble all files and start server
+python reassemble_all.py && python -m http.server 8080
+```
+
+**🔧 Manual Reassembly:**
 ```bash
 # Reassemble all files at once
-python join_all_files.py
+python reassemble_all.py
 
 # Or reassemble individual files
 python split_files.py join "games/feed-the-void/index.wasm"
