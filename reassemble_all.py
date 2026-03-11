@@ -76,14 +76,14 @@ def main():
     
     # Files to reassemble in each directory
     files_to_reassemble = [
-        ("index.wasm", "feed-the-void"),
-        ("index.pck", "outhold"),
-        ("index.side.wasm", "outhold"),
-        ("index.pck", "gscriptlearn"),
-        ("Reacticore_20_02_26.wasm.br", "reacticore/Build"),
-        ("WebGL.wasm.br", "scritchy-scratchy/Build"),
-        ("dc5816d0674db347069a3818c4eebb18.wasm.br", "epicmine/Build"),
-        ("f3f6b0ef131f67204364f79b8ba5fb91.data.br", "epicmine/Build")
+        ("index.wasm", "games/feed-the-void"),
+        ("index.pck", "games/outhold"),
+        ("index.side.wasm", "games/outhold"),
+        ("index.pck", "games/gscriptlearn"),
+        ("Reacticore_20_02_26.wasm.br", "games/reacticore/Build"),
+        ("WebGL.wasm.br", "games/scritchy-scratchy/Build"),
+        ("dc5816d0674db347069a3818c4eebb18.wasm.br", "games/epicmine/Build"),
+        ("f3f6b0ef131f67204364f79b8ba5fb91.data.br", "games/epicmine/Build")
     ]
     
     success_count = 0

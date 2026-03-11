@@ -59,15 +59,8 @@ games/*/WebGL.wasm.br
 games/*/WebGL.data.br
 games/*/dc5816d0674db347069a3818c4eebb18.wasm.br
 
-# Allow split chunks (under 25MB limit)
-!*.part.001
-!*.part.002
-!*.part.003
-!*.part.004
-!*.part.005
+# Split files are no longer needed - files are reassembled
+*.part.*
 
-# Exclude original large files
-*.wasm
-*.wasm.br
-*.pck
-*.data.br
+# Note: Large game files are now included for simplicity
+# If GitHub rejects them, you may need to use Git LFS
