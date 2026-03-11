@@ -107,7 +107,7 @@ def update_reacticore():
 def update_epicmine():
     """Update Epic Mine game to use jsDelivr."""
     
-    file_path = Path("games/epicmine/Build/index.html")
+    file_path = Path("games/epicmine/index.html")
     if not file_path.exists():
         print(f"❌ File not found: {file_path}")
         return False
