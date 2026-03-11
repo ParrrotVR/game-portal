@@ -59,9 +59,9 @@ games/*/WebGL.wasm.br
 games/*/WebGL.data.br
 games/*/dc5816d0674db347069a3818c4eebb18.wasm.br
 
-# Exclude large game files from git (keep them locally for playing)
-games/*/index.wasm
-games/*/index.pck
-games/*/index.side.wasm
-games/*/Build/*.wasm.br
-games/*/Build/*.data.br
+# Large game files are included (under 100MB limit for CLI)
+# games/*/index.wasm
+# games/*/index.pck
+# games/*/index.side.wasm
+# games/*/Build/*.wasm.br
+# games/*/Build/*.data.br
