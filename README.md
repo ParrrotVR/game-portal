@@ -2,9 +2,11 @@
 
 A multi-game web portal featuring HTML5 games built with various engines.
 
-## 🎮 Game Files - Automatic Reassembly
+## 🎮 Game Files - Split for GitHub
 
-Large game files are split into 20MB chunks to work around GitHub's 25MB limit. **The website automatically reassembles them when loaded!**
+Large game files are split into 20MB chunks to work around GitHub's 25MB limit.
+
+**Note:** For local development, you'll need to reassemble the split files manually using the provided scripts.
 
 ### 📁 Split Files Included:
 - `games/feed-the-void/index.wasm.part.001` (20MB)
@@ -31,15 +33,25 @@ Large game files are split into 20MB chunks to work around GitHub's 25MB limit. 
 2. **Stored locally** - Files are cached in browser storage for instant loading
 3. **Seamless gaming** - No manual steps required!
 
-### 🔧 Manual Reassembly (Optional):
-If you want to reassemble files locally for development:
+### 🔧 Manual Reassembly (Required for Local Development):
+**For local development, you MUST reassemble the split files:**
+
 ```bash
-# Automatic reassembly
+# Reassemble all files at once
 python join_all_files.py
 
-# Or individual files
+# Or reassemble individual files
 python split_files.py join "games/feed-the-void/index.wasm"
+python split_files.py join "games/outhold/index.pck"
+python split_files.py join "games/outhold/index.side.wasm"
+python split_files.py join "games/gscriptlearn/index.pck"
+python split_files.py join "games/reacticore/Build/Reacticore_20_02_26.wasm.br"
+python split_files.py join "games/scritchy-scratchy/Build/WebGL.wasm.br"
+python split_files.py join "games/epicmine/Build/dc5816d0674db347069a3818c4eebb18.wasm.br"
+python split_files.py join "games/epicmine/Build/f3f6b0ef131f67204364f79b8ba5fb91.data.br"
 ```
+
+**After reassembly:** All games will load properly in your local development environment.
 
 ## 🚀 Quick Start
 
