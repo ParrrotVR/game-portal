@@ -57,17 +57,25 @@
         <button id="mobile-warning-dismiss-button">I understand</button>
       </div>
     </div>
+    <script src="merge_index_pck.js"></script>
+    <script src="merge_index_wasm.js"></script>
     <script type="text/javascript" src="index.js"></script>
     <script type="text/javascript">
       const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":40303104,"index.wasm":17471369},"focusCanvas":true,"gdnativeLibs":[]};
-      const GDQUEST_ENVIRONMENT = {};
+      const engine = new Engine(GODOT_CONFIG);
+      
+      // Start the game after files are merged
+      setTimeout(() => {
+        engine.startGame().then(() => {
+          console.log("Game started successfully!");
+          // Hide loading text
+          const loadingText = document.querySelector("#loading-text");
+          if (loadingText) {
+            loadingText.style.display = "none";
+          }
+        });
+      }, 1000); // Give time for file merging
     </script>
-    <script type="text/javascript" src="bootstrap.js"></script>
   
-    <script src="merge_index_pck.js"></script>
-
-    <script src="merge_index_pck.js"></script>
-
-    <script src="merge_index_wasm.js"></script>
 </body>
 </html>
