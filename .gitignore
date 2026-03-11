@@ -46,8 +46,21 @@ temp/
 *.rar
 *.7z
 
-# Keep game directories but exclude very large files
+# Keep game directories but exclude very large files (>25MB GitHub limit)
 games/*/index.wasm
 games/*/index.pck
+games/*/index.side.wasm
 games/*/Build/*.wasm.br
 games/*/Build/*.data.br
+games/*/Build/*.framework.js.br
+games/*/Reacticore_*.wasm.br
+games/*/Reacticore_*.data.br
+games/*/WebGL.wasm.br
+games/*/WebGL.data.br
+games/*/dc5816d0674db347069a3818c4eebb18.wasm.br
+
+# Also exclude large binary files that can't be compressed
+*.wasm
+*.wasm.br
+*.pck
+*.data.br

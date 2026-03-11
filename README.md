@@ -1,6 +1,23 @@
 # 🎮 Game Portal
 
-A sleek, modern game portal featuring a purple and black color scheme with interactive 3D card effects.
+A multi-game web portal featuring HTML5 games built with various engines.
+
+## ⚠️ Important - Game Assets Required
+
+Due to GitHub's 25MB file size limit, large game files are excluded from this repository. You'll need to download them separately:
+
+### Missing Files (~150MB total):
+- `games/feed-the-void/index.wasm` (37MB)
+- `games/feed-the-void/index.pck` (15MB) 
+- `games/outhold/index.wasm` (41MB)
+- `games/outhold/index.pck` (36MB)
+- `games/gscriptlearn/index.wasm` (17MB)
+- `games/gscriptlearn/index.pck` (40MB)
+
+### Solution:
+1. **Download the complete game files** from your original sources
+2. **Place them in the correct folders** as shown above
+3. **Or use Git LFS** if you have it set up
 
 ## 🚀 Quick Start
 
