@@ -1,0 +1,42 @@
+{
+  "feed-the-void/index.wasm": {
+    "size_mb": 35.38,
+    "game": "feed-the-void",
+    "filename": "index.wasm"
+  },
+  "outhold/index.pck": {
+    "size_mb": 35.05,
+    "game": "outhold",
+    "filename": "index.pck"
+  },
+  "outhold/index.side.wasm": {
+    "size_mb": 39.44,
+    "game": "outhold",
+    "filename": "index.side.wasm"
+  },
+  "gscriptlearn/index.pck": {
+    "size_mb": 38.44,
+    "game": "gscriptlearn",
+    "filename": "index.pck"
+  },
+  "reacticore/Reacticore_20_02_26.wasm.br": {
+    "size_mb": 59.33,
+    "game": "reacticore",
+    "filename": "Reacticore_20_02_26.wasm.br"
+  },
+  "scritchy-scratchy/WebGL.wasm.br": {
+    "size_mb": 56.68,
+    "game": "scritchy-scratchy",
+    "filename": "WebGL.wasm.br"
+  },
+  "epicmine/dc5816d0674db347069a3818c4eebb18.wasm.br": {
+    "size_mb": 39.58,
+    "game": "epicmine",
+    "filename": "dc5816d0674db347069a3818c4eebb18.wasm.br"
+  },
+  "epicmine/f3f6b0ef131f67204364f79b8ba5fb91.data.br": {
+    "size_mb": 24.28,
+    "game": "epicmine",
+    "filename": "f3f6b0ef131f67204364f79b8ba5fb91.data.br"
+  }
+}
