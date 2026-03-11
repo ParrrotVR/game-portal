@@ -5,8 +5,11 @@ class FileReassembler {
     constructor() {
         this.neededFiles = [
             'games/feed-the-void/index.wasm',
-            'games/outhold/index.pck', 
-            'games/gscriptlearn/index.pck'
+            'games/outhold/index.pck',
+            'games/outhold/index.side.wasm',
+            'games/gscriptlearn/index.pck',
+            'games/reacticore/Build/Reacticore_20_02_26.wasm.br',
+            'games/scritchy-scratchy/Build/WebGL.wasm.br'
         ];
         this.checkInterval = null;
     }

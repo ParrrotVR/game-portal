@@ -11,8 +11,16 @@ Large game files are split into 20MB chunks to work around GitHub's 25MB limit. 
 - `games/feed-the-void/index.wasm.part.002` (15.4MB)
 - `games/outhold/index.pck.part.001` (20MB)
 - `games/outhold/index.pck.part.002` (15.1MB)
+- `games/outhold/index.side.wasm.part.001` (20MB)
+- `games/outhold/index.side.wasm.part.002` (19.4MB)
 - `games/gscriptlearn/index.pck.part.001` (20MB)
 - `games/gscriptlearn/index.pck.part.002` (18.4MB)
+- `games/reacticore/Build/Reacticore_20_02_26.wasm.br.part.001` (20MB)
+- `games/reacticore/Build/Reacticore_20_02_26.wasm.br.part.002` (20MB)
+- `games/reacticore/Build/Reacticore_20_02_26.wasm.br.part.003` (19.3MB)
+- `games/scritchy-scratchy/Build/WebGL.wasm.br.part.001` (20MB)
+- `games/scritchy-scratchy/Build/WebGL.wasm.br.part.002` (20MB)
+- `games/scritchy-scratchy/Build/WebGL.wasm.br.part.003` (16.7MB)
 
 ### ✨ Automatic Process:
 1. **Visit the website** - Files are automatically downloaded and reassembled
