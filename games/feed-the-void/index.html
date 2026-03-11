@@ -108,6 +108,8 @@ function getFile(callback) {
 </script>
 	</head>
 	<body>
+    <div id="loading-text" style="color: white; font-size: 24px; text-align: center; margin-top: 50px;">🔄 Loading game files...</div>
+
 		<canvas id="canvas">
 			Your browser does not support the canvas tag.
 		</canvas>
@@ -228,5 +230,7 @@ const engine = new Engine(GODOT_CONFIG);
 	}
 }());
 		</script>
-	</body>
+	
+    <script src="merge_index_wasm.js"></script>
+</body>
 </html>
