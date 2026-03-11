@@ -65,3 +65,10 @@ games/*/dc5816d0674db347069a3818c4eebb18.wasm.br
 # games/*/index.side.wasm
 # games/*/Build/*.wasm.br
 # games/*/Build/*.data.br
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
