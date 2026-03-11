@@ -59,7 +59,14 @@ games/*/WebGL.wasm.br
 games/*/WebGL.data.br
 games/*/dc5816d0674db347069a3818c4eebb18.wasm.br
 
-# Also exclude large binary files that can't be compressed
+# Allow split chunks (under 25MB limit)
+!*.part.001
+!*.part.002
+!*.part.003
+!*.part.004
+!*.part.005
+
+# Exclude original large files
 *.wasm
 *.wasm.br
 *.pck

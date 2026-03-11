@@ -2,22 +2,45 @@
 
 A multi-game web portal featuring HTML5 games built with various engines.
 
-## ⚠️ Important - Game Assets Required
+## 🎮 Game Files - Split for GitHub
 
-Due to GitHub's 25MB file size limit, large game files are excluded from this repository. You'll need to download them separately:
+Large game files are split into 20MB chunks to work around GitHub's 25MB limit.
 
-### Missing Files (~150MB total):
-- `games/feed-the-void/index.wasm` (37MB)
-- `games/feed-the-void/index.pck` (15MB) 
-- `games/outhold/index.wasm` (41MB)
-- `games/outhold/index.pck` (36MB)
-- `games/gscriptlearn/index.wasm` (17MB)
-- `games/gscriptlearn/index.pck` (40MB)
+### 📁 Split Files Included:
+- `games/feed-the-void/index.wasm.part.001` (20MB)
+- `games/feed-the-void/index.wasm.part.002` (15.4MB)
+- `games/outhold/index.pck.part.001` (20MB)
+- `games/outhold/index.pck.part.002` (15.1MB)
+- `games/gscriptlearn/index.pck.part.001` (20MB)
+- `games/gscriptlearn/index.pck.part.002` (18.4MB)
 
-### Solution:
-1. **Download the complete game files** from your original sources
-2. **Place them in the correct folders** as shown above
-3. **Or use Git LFS** if you have it set up
+### 🔄 Reassemble Game Files:
+**Option 1: Automatic (Recommended)**
+```bash
+# Run the automatic reassembly script
+python join_all_files.py
+# Or on Windows: join_all_files.bat
+```
+
+**Option 2: Manual**
+```bash
+# Reassemble each file individually
+python split_files.py join "games/feed-the-void/index.wasm"
+python split_files.py join "games/outhold/index.pck"
+python split_files.py join "games/gscriptlearn/index.pck"
+```
+
+**Option 3: Manual Copy**
+1. Combine split files in order:
+   ```bash
+   # Windows
+   copy /b games\feed-the-void\index.wasm.part.001 + games\feed-the-void\index.wasm.part.002 games\feed-the-void\index.wasm
+   
+   # Mac/Linux
+   cat games/feed-the-void/index.wasm.part.001 games/feed-the-void/index.wasm.part.002 > games/feed-the-void/index.wasm
+   ```
+2. Repeat for other split files
+3. Delete the .part files after successful reassembly
 
 ## 🚀 Quick Start
 
