@@ -3,12 +3,16 @@
 
 async function fetchWithProgress(url, onProgress) {
   try {
+    console.log('Fetching:', url);
     const response = await fetch(url);
+    console.log('Response status:', response.status);
+    
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
     const arrayBuffer = await response.arrayBuffer();
+    console.log('Buffer size:', arrayBuffer.byteLength);
     
     if (onProgress) {
       onProgress(arrayBuffer.byteLength, arrayBuffer.byteLength);

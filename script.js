@@ -52,7 +52,7 @@ const refreshGameBtn = document.getElementById('refresh-game-btn');
 
 let currentGamePath = '';
 
-function openGame(e) {
+async function openGame(e) {
     const card = e.currentTarget;
     const gamePath = card.getAttribute('data-game-path');
 
@@ -63,6 +63,21 @@ function openGame(e) {
     // Show loading status
     showLoadingStatus();
 
+    // Ensure Service Worker is active before loading game assets
+    if ('serviceWorker' in navigator) {
+        // If already controlled, we are good to go immediately (preserves user gesture)
+        if (!navigator.serviceWorker.controller) {
+            try {
+                console.log('⏳ Waiting for Service Worker...');
+                await navigator.serviceWorker.ready;
+            } catch (err) {
+                console.warn('SW Ready check failed:', err);
+            }
+        }
+        console.log('🚀 Service Worker ready. Launching game...');
+    }
+
+    gameIframe.setAttribute('allow', 'autoplay; fullscreen; gamepad; cross-origin-isolated');
     gameIframe.src = gamePath;
 
     // Show overlay with animation
