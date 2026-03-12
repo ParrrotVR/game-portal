@@ -2,30 +2,23 @@
 // File merging script for solar-sandbox
 
 async function fetchWithProgress(url, onProgress) {
-  const response = await fetch(url);
-  const reader = response.body.getReader();
-  let chunks = [];
-  let received = 0;
-  
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    received += value.length;
-    chunks.push(value);
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const arrayBuffer = await response.arrayBuffer();
     
     if (onProgress) {
-      onProgress(received, response.headers.get('content-length') || 0);
+      onProgress(arrayBuffer.byteLength, arrayBuffer.byteLength);
     }
+    
+    return arrayBuffer;
+  } catch (error) {
+    console.error('Fetch error:', error);
+    throw error;
   }
-  
-  let fullBuffer = new Uint8Array(received);
-  let offset = 0;
-  for (let chunk of chunks) {
-    fullBuffer.set(chunk, offset);
-    offset += chunk.length;
-  }
-  
-  return fullBuffer.buffer;
 }
 
 async function mergeFiles(fileParts, outputName, onProgress) {
