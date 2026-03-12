@@ -1,11 +1,18 @@
-import { getAssetFromKV } from '@cloudflare/kv-asset-handler';
-
 export default {
   async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    let path = url.pathname === '/' ? '/index.html' : url.pathname;
+    
     try {
-      return await getAssetFromKV(request, env.ASSETS);
+      // Try to get the asset from the assets binding
+      const asset = await env.ASSETS.fetch(new Request(path));
+      if (asset.status === 200) {
+        return asset;
+      }
     } catch (e) {
-      return new Response('Not found', { status: 404 });
+      // Continue to fallback
     }
+    
+    return new Response('Not found', { status: 404 });
   }
 };
