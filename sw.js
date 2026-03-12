@@ -1,4 +1,4 @@
-const CACHE_NAME = 'game-portal-v7'; // Upgraded version
+const CACHE_NAME = 'game-portal-v8'; // Force cache wipe - COOP/COEP headers added
 const DATA_EXTENSIONS = ['.pck', '.wasm', '.data', '.unityweb', '.bundle'];
 
 self.addEventListener('install', (event) => self.skipWaiting());
