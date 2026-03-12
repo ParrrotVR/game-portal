@@ -63,24 +63,30 @@ function getParts(basePath, start, end) {
 
 // Initialize merging for outhold
 (async () => {
+  console.log('Starting Outhold file merge...');
   const pckParts = getParts('./index_parts/index.pck', 1, 8);
+  console.log('PCK parts:', pckParts);
   
   try {
     const pckUrl = await mergeFiles(pckParts, 'index.pck');
+    console.log('PCK merge successful, URL:', pckUrl);
     
     // Override XMLHttpRequest to serve merged files
     const originalOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function(method, url, ...args) {
       if (url.includes('index.pck')) {
+        console.log('Intercepting PCK request:', url, '->', pckUrl);
         return originalOpen.call(this, method, pckUrl, ...args);
       }
       return originalOpen.call(this, method, url, ...args);
     };
     
     console.log('File merging complete - Game ready!');
+    const loadingText = document.querySelector("#loading-text") || document.body;
+    loadingText.textContent = "Game ready! Starting...";
   } catch (error) {
     console.error('Error merging files:', error);
     const loadingText = document.querySelector("#loading-text") || document.body;
-    loadingText.textContent = "Error loading game files";
+    loadingText.textContent = "Error loading game files: " + error.message;
   }
 })();

@@ -50,24 +50,32 @@ function getParts(basePath, start, end) {
 
 // Initialize merging for outhold
 (async () => {
+  console.log('Starting Outhold WASM merge...');
   const wasmParts = getParts('./index_parts/index.side.wasm', 1, 8);
+  console.log('WASM parts:', wasmParts);
   
   try {
     const wasmUrl = await mergeFiles(wasmParts, 'index.side.wasm');
+    console.log('WASM merge successful, URL:', wasmUrl);
     
     // Override XMLHttpRequest to serve merged files
     const originalOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function(method, url, ...args) {
       if (url.includes('index.side.wasm')) {
+        console.log('Intercepting WASM request:', url, '->', wasmUrl);
         return originalOpen.call(this, method, wasmUrl, ...args);
       }
       return originalOpen.call(this, method, url, ...args);
     };
     
-    console.log('File merging complete - Game ready!');
-  } catch (error) {
-    console.error('Error merging files:', error);
+    console.log('WASM merging complete - Game ready!');
     const loadingText = document.querySelector("#loading-text") || document.body;
-    loadingText.textContent = "Error loading game files";
+    if (loadingText.textContent !== "Error loading game files") {
+      loadingText.textContent = "All files merged! Starting game...";
+    }
+  } catch (error) {
+    console.error('Error merging WASM files:', error);
+    const loadingText = document.querySelector("#loading-text") || document.body;
+    loadingText.textContent = "Error loading WASM files: " + error.message;
   }
 })();
