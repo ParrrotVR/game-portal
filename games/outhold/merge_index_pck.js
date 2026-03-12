@@ -6,6 +6,7 @@ async function fetchWithProgress(url, onProgress) {
     console.log('Fetching:', url);
     const response = await fetch(url);
     console.log('Response status:', response.status);
+    console.log('Content-Type:', response.headers.get('content-type'));
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -13,6 +14,14 @@ async function fetchWithProgress(url, onProgress) {
     
     const arrayBuffer = await response.arrayBuffer();
     console.log('Buffer size:', arrayBuffer.byteLength);
+    
+    // Check if it's an HTML error page
+    const text = new TextDecoder().decode(arrayBuffer.slice(0, 100));
+    if (text.includes('<!DOCTYPE html>') || text.includes('<html>')) {
+      console.error('Got HTML error page instead of file!');
+      console.error('First 100 chars:', text);
+      throw new Error('Got HTML error page instead of file');
+    }
     
     if (onProgress) {
       onProgress(arrayBuffer.byteLength, arrayBuffer.byteLength);
