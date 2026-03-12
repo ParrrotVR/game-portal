@@ -569,23 +569,29 @@ return undefined;
 var res = r;
 r = null;
 res.arrayBuffer().then(function(buf) {
-function attempt() {
-return WebAssembly.instantiate(buf, imports).catch(function(err) {
-if (err instanceof WebAssembly.LinkError) {
-var m = err.message.match(/table import \d+ is smaller than initial (\d+)/);
-if (m) {
-var needed = parseInt(m[1]);
+WebAssembly.compile(buf).then(function(_mod) {
+function attempt(n) {
+return WebAssembly.instantiate(_mod, imports).then(function(inst) {
+return done({instance: inst, module: _mod});
+}).catch(function(err) {
+var isTableErr = (err instanceof WebAssembly.LinkError || err instanceof WebAssembly.RuntimeError) &&
+(/table import \d+ is smaller than initial/.test(err.message) || /table index is out of bounds/.test(err.message));
+if (isTableErr && n < 5) {
+var m = err.message.match(/initial (\d+)/);
+var needed = m ? parseInt(m[1]) : 0;
 var tbl = imports.env.__indirect_function_table;
-if (tbl instanceof WebAssembly.Table && tbl.length < needed) {
-tbl.grow(needed - tbl.length);
-return WebAssembly.instantiate(buf, imports);
+if (tbl instanceof WebAssembly.Table) {
+var growBy = Math.max(needed, tbl.length + 131072) - tbl.length;
+if (growBy > 0) tbl.grow(growBy);
 }
-}
+return attempt(n + 1);
 }
 throw err;
 });
 }
-return attempt().then(done);
+return attempt(0);
+});
+return {};
 });
 return {};
 },'locateFile': function (path) {
