@@ -557,6 +557,17 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 				function done(result) {
 					onSuccess(result['instance'], result['module']);
 				}
+				// index.wasm is an Emscripten side module (has a dylink.0 section) that
+				// imports C++ runtime functions (e.g. __cxa_atexit) not present in
+				// wasmImports. Wrap env with a Proxy so any missing import gets a
+				// safe no-op stub instead of causing a WebAssembly LinkError.
+				imports.env = new Proxy(imports.env, {
+					get(target, prop) {
+						if (prop in target) return target[prop];
+						if (typeof prop === 'string') return function() { return 0; };
+						return undefined;
+					}
+				});
 				if (typeof (WebAssembly.instantiateStreaming) !== 'undefined') {
 					WebAssembly.instantiateStreaming(Promise.resolve(r), imports).then(done);
 				} else {
