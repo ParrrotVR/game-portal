@@ -50,36 +50,23 @@ function getParts(basePath, start, end) {
 
 // Initialize merging for outhold
 (async () => {
+  const wasmParts = getParts('./index_parts/index.side.wasm', 1, 8);
+  
   try {
-    // Update loading text
-    const loadingText = document.querySelector("#loading-text") || document.body;
-    const originalText = loadingText.textContent;
+    const wasmUrl = await mergeFiles(wasmParts, 'index.side.wasm');
     
-    // Merge index.side.wasm
-    const fileParts = getParts("index.side.wasm", 1, 8);
-    const mergedUrl = await mergeFiles(
-      fileParts, 
-      "index.side.wasm", 
-      (progress, filename) => {
-        loadingText.textContent = `Merging ${filename}: ${progress.toFixed(1)}%`;
-      }
-    );
-    
-    // Override XMLHttpRequest to serve merged file
+    // Override XMLHttpRequest to serve merged files
     const originalOpen = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function(method, url, ...rest) {
-      if (url.includes("index.side.wasm")) {
-        url = mergedUrl;
+    XMLHttpRequest.prototype.open = function(method, url, ...args) {
+      if (url.includes('index.side.wasm')) {
+        return originalOpen.call(this, method, wasmUrl, ...args);
       }
-      return originalOpen.call(this, method, url, ...rest);
+      return originalOpen.call(this, method, url, ...args);
     };
     
-    // Restore original text
-    loadingText.textContent = originalText;
-    console.log("File merging complete - Game ready!");
-    
+    console.log('File merging complete - Game ready!');
   } catch (error) {
-    console.error("Error merging files:", error);
+    console.error('Error merging files:', error);
     const loadingText = document.querySelector("#loading-text") || document.body;
     loadingText.textContent = "Error loading game files";
   }
