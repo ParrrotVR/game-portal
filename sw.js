@@ -1,65 +1,77 @@
-const CACHE_NAME = 'game-portal-v1';
+const CACHE_NAME = 'game-portal-v5';
+const DATA_EXTENSIONS = ['.pck', '.wasm', '.data', '.unityweb', '.br', '.bundle'];
 
-// Files that are known to be split into .part1, .part2, etc.
-const SPLIT_FILES = [
-    'pvzert.data.unityweb',
-    'default_assets_all_86e6c689539c8f4b2be0ff2e56740e33.bundle',
-    '69a2ad277230a9b551055478393b4c76.wasm.br',
-    '643cb01d8dd85a9758fd6be787a6f05a.data.br',
-    'dc5816d0674db347069a3818c4eebb18.wasm.br',
-    'f3f6b0ef131f67204364f79b8ba5fb91.data.br'
-];
-
-self.addEventListener('install', (event) => {
-    self.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-    event.waitUntil(clients.claim());
-});
+self.addEventListener('install', (event) => self.skipWaiting());
+self.addEventListener('activate', (event) => event.waitUntil(clients.claim()));
 
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
-    const filename = url.pathname.split('/').pop();
-
-    if (SPLIT_FILES.some(f => filename === f)) {
-        console.log(`[SW] Intercepting split file: ${filename}`);
-        event.respondWith(assembleSplitFile(event.request.url));
+    const path = url.pathname.toLowerCase();
+    
+    const isData = DATA_EXTENSIONS.some(ext => path.endsWith(ext));
+    
+    if (isData) {
+        event.respondWith(
+            fetch(event.request).then(response => {
+                const isHtml = response.headers.get('content-type')?.includes('text/html');
+                if (response.ok && !isHtml) return response;
+                return assembleSplitFile(event.request.url);
+            }).catch(() => assembleSplitFile(event.request.url))
+        );
     }
 });
 
 async function assembleSplitFile(baseUrl) {
-    const parts = [];
-    let i = 1;
+    const urlObj = new URL(baseUrl);
+    const filename = urlObj.pathname.split('/').pop();
+    const directory = urlObj.pathname.substring(0, urlObj.pathname.lastIndexOf('/') + 1);
+    
+    const sNames = [filename];
+    if (filename.endsWith('.wasm')) sNames.push(filename + '.br');
+    if (filename.endsWith('.data')) sNames.push(filename + '.br');
+    
+    const folders = ['', 'index_parts/', 'index.pck_parts/', 'index.wasm_parts/', 'index.data_parts/', `${filename}_parts/`];
 
-    try {
-        while (true) {
-            const partUrl = `${baseUrl}.part${i}`;
-            const response = await fetch(partUrl);
-
-            if (response.status === 404 || !response.ok) {
-                if (i === 1) {
-                    // If even part1 is missing, fallback to original URL (maybe it's not split?)
-                    return fetch(baseUrl);
+    for (const sName of sNames) {
+        for (const folder of folders) {
+            const prefix = `${directory}${folder}${sName}.part`;
+            for (const pad of ['001', '01', '1']) {
+                const testUrl = `${urlObj.origin}${prefix}${pad}`;
+                const res = await fetch(testUrl, { method: 'HEAD' });
+                const isHtml = res.headers.get('content-type')?.includes('text/html');
+                
+                if (res.ok && !isHtml) {
+                    // Start assembly
+                    const parts = [];
+                    let i = 1;
+                    while (true) {
+                        const pUrl = `${urlObj.origin}${prefix}${i.toString().padStart(pad.length, '0')}`;
+                        const pRes = await fetch(pUrl);
+                        const pIsHtml = pRes.headers.get('content-type')?.includes('text/html');
+                        if (pRes.ok && !pIsHtml) {
+                            parts.push(await pRes.blob());
+                            i++;
+                        } else {
+                            break;
+                        }
+                        if (i > 500) break;
+                    }
+                    
+                    if (parts.length > 0) {
+                        const blob = new Blob(parts, { type: 'application/octet-stream' });
+                        return new Response(blob, {
+                            headers: {
+                                'Content-Type': 'application/octet-stream',
+                                'Cross-Origin-Embedder-Policy': 'require-corp',
+                                'Cross-Origin-Opener-Policy': 'same-origin',
+                                'Access-Control-Allow-Origin': '*'
+                            }
+                        });
+                    }
                 }
-                // End of parts
-                break;
             }
-
-            parts.push(await response.blob());
-            console.log(`[SW] Fetched part ${i} for ${baseUrl}`);
-            i++;
-
-            // Safety break for too many parts
-            if (i > 10) break;
         }
-
-        const mergedBlob = new Blob(parts, { type: 'application/octet-stream' });
-        return new Response(mergedBlob, {
-            headers: { 'Content-Type': 'application/octet-stream' }
-        });
-    } catch (e) {
-        console.error(`[SW] Error assembling ${baseUrl}:`, e);
-        return fetch(baseUrl);
     }
+    
+    return new Response('Asset not found', { status: 404 });
 }
