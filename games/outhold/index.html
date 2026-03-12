@@ -115,7 +115,7 @@ body {
       // Wait for merge completion before loading game
       let mergeCheckInterval = setInterval(() => {
         const loadingText = document.querySelector("#loading-text");
-        if (loadingText && (loadingText.textContent.includes("File merging complete") || loadingText.textContent.includes("Error loading"))) {
+        if (loadingText && (loadingText.textContent.includes("Game ready") || loadingText.textContent.includes("Error loading"))) {
           clearInterval(mergeCheckInterval);
           setTimeout(() => {
             const script = document.createElement('script');
