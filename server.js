@@ -36,14 +36,48 @@ http.createServer((req, res) => {
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   res.setHeader('Access-Control-Allow-Origin', '*');
 
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      res.writeHead(404);
-      res.end(`404: ${req.url}`);
+  fs.readFile(filePath, async (err, data) => {
+    if (!err) {
+      res.writeHead(200, { 'Content-Type': contentType });
+      res.end(data);
       return;
     }
-    res.writeHead(200, { 'Content-Type': contentType });
-    res.end(data);
+
+    // File not found — try to assemble from split parts
+    // Looks in: <dir>/index_parts/<file>.part001 ... AND <dir>/index.side_parts/<file>.part001
+    const dir = path.dirname(filePath);
+    const base = path.basename(filePath);
+    const partDirs = [
+      path.join(dir, 'index_parts'),
+      path.join(dir, 'index.side_parts'),
+      path.join(dir, base + '_parts'),
+    ];
+
+    let assembled = null;
+    for (const partDir of partDirs) {
+      if (!fs.existsSync(partDir)) continue;
+      const chunks = [];
+      let i = 1;
+      while (true) {
+        const partFile = path.join(partDir, `${base}.part${String(i).padStart(3,'0')}`);
+        if (!fs.existsSync(partFile)) break;
+        chunks.push(fs.readFileSync(partFile));
+        i++;
+      }
+      if (chunks.length > 0) {
+        assembled = Buffer.concat(chunks);
+        console.log(`  Assembled ${base} from ${chunks.length} parts (${(assembled.length/1024/1024).toFixed(1)} MB)`);
+        break;
+      }
+    }
+
+    if (assembled) {
+      res.writeHead(200, { 'Content-Type': contentType });
+      res.end(assembled);
+    } else {
+      res.writeHead(404);
+      res.end(`404: ${req.url}`);
+    }
   });
 }).listen(PORT, () => {
   console.log(`\n🎮 Game Portal server running at http://localhost:${PORT}`);
