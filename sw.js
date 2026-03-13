@@ -1,4 +1,4 @@
-const CACHE_NAME = 'game-portal-v15'; // Revert coi-fix damage, restore threads v1.1.1 v1.1.0
+const CACHE_NAME = 'game-portal-v16'; // Add COOP/COEP to navigation responses for crossOriginIsolation v1.1.2
 const DATA_EXTENSIONS = ['.pck', '.wasm', '.data', '.unityweb', '.bundle'];
 
 self.addEventListener('install', (event) => self.skipWaiting());
@@ -17,6 +17,25 @@ self.addEventListener('fetch', (event) => {
                 if (response.ok && !isHtml) return response;
                 return assembleSplitFile(event.request.url);
             }).catch(() => assembleSplitFile(event.request.url))
+        );
+        return;
+    }
+
+    // Inject COOP/COEP headers on every navigation response so crossOriginIsolated
+    // is true in the main window AND any game iframes, regardless of server config.
+    if (event.request.mode === 'navigate') {
+        event.respondWith(
+            fetch(event.request).then(response => {
+                const headers = new Headers(response.headers);
+                headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+                headers.set('Cross-Origin-Embedder-Policy', 'credentialless');
+                headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
+                return new Response(response.body, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: headers
+                });
+            })
         );
     }
 });
