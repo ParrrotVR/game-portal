@@ -1,4 +1,4 @@
-const CACHE_NAME = 'game-portal-v12'; // Bump: added SharedArrayBuffer compatibility patch v1.0.8
+const CACHE_NAME = 'game-portal-v13'; // Bump: enhanced SharedArrayBuffer error handling v1.0.9
 const DATA_EXTENSIONS = ['.pck', '.wasm', '.data', '.unityweb', '.bundle'];
 
 self.addEventListener('install', (event) => self.skipWaiting());
