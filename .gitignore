@@ -52,8 +52,6 @@ temp/
 games/*/index.pck
 games/*/index.side.wasm
 games/*/Build/*.wasm.br
-games/*/Build/*.data.br
-games/*/Build/*.framework.js.br
 games/*/Reacticore_*.wasm.br
 games/*/Reacticore_*.data.br
 games/*/WebGL.wasm.br
