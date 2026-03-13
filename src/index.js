@@ -1,8 +1,103 @@
+// ── Bare v3 HTTP proxy server ──────────────────────────────────────────────
+async function handleBare(request) {
+    // CORS preflight
+    if (request.method === 'OPTIONS') {
+        return new Response(null, {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS',
+                'Access-Control-Allow-Headers': '*',
+            },
+        });
+    }
+
+    // Bare v3 metadata endpoint
+    const url = new URL(request.url);
+    if (url.pathname === '/bare/v3/' && request.method === 'GET') {
+        return new Response(
+            JSON.stringify({ versions: ['v3'], language: 'Cloudflare Workers', maintainer: {} }),
+            { headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+        );
+    }
+
+    const host     = request.headers.get('x-bare-host');
+    const port     = request.headers.get('x-bare-port');
+    const protocol = request.headers.get('x-bare-protocol');
+    const barePath = request.headers.get('x-bare-path');
+    const rawBareHeaders    = request.headers.get('x-bare-headers');
+    const rawForwardHeaders = request.headers.get('x-bare-forward-headers');
+
+    if (!host || !port || !protocol || !barePath) {
+        return new Response(JSON.stringify({ code: 'MISSING_BARE_HEADER' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        });
+    }
+
+    const targetUrl = `${protocol}//${host}:${port}${barePath}`;
+    const bareHeaders    = JSON.parse(rawBareHeaders    || '{}');
+    const forwardHeaders = JSON.parse(rawForwardHeaders || '[]');
+
+    const outHeaders = new Headers();
+    for (const [key, val] of Object.entries(bareHeaders)) {
+        const v = Array.isArray(val) ? val[0] : val;
+        if (v !== undefined) outHeaders.set(key, String(v));
+    }
+    for (const hdr of forwardHeaders) {
+        const val = request.headers.get(hdr);
+        if (val) outHeaders.set(hdr, val);
+    }
+
+    // Hop-by-hop headers to strip from response
+    const HOP_BY_HOP = new Set([
+        'transfer-encoding', 'connection', 'keep-alive', 'upgrade',
+        'proxy-authenticate', 'proxy-authorization', 'te', 'trailers',
+    ]);
+
+    try {
+        const res = await fetch(targetUrl, {
+            method: request.method,
+            headers: outHeaders,
+            body: ['GET', 'HEAD'].includes(request.method) ? null : request.body,
+            redirect: 'manual',
+        });
+
+        const resHeaders = {};
+        for (const [key, val] of res.headers.entries()) {
+            if (!HOP_BY_HOP.has(key.toLowerCase())) {
+                resHeaders[key] = [val];
+            }
+        }
+
+        return new Response(res.body, {
+            status: 200,
+            headers: {
+                'x-bare-status':      String(res.status),
+                'x-bare-status-text': res.statusText,
+                'x-bare-headers':     JSON.stringify(resHeaders),
+                'Access-Control-Allow-Origin':  '*',
+                'Access-Control-Allow-Headers': '*',
+                'Content-Type': 'application/octet-stream',
+            },
+        });
+    } catch (err) {
+        return new Response(JSON.stringify({ code: 'UNKNOWN', message: err.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        });
+    }
+}
+
 export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
         let path = url.pathname;
         if (path === '/') path = '/index.html';
+
+        // Route bare v3 proxy requests
+        if (path.startsWith('/bare/v3')) {
+            return handleBare(request);
+        }
 
         const addIsolationHeaders = (response) => {
             if (!response) return response;

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Browser – Itchy Scritchy</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #020617;
+            --surface: rgba(255,255,255,0.05);
+            --border: rgba(255,255,255,0.1);
+            --cyan: #00d2ff;
+            --magenta: #ff00cc;
+            --text: #e2e8f0;
+            --text-dim: rgba(226,232,240,0.5);
+            --radius: 12px;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── Top Bar ── */
+        #toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: rgba(2,6,23,0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .nav-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            border-radius: 8px;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .nav-btn:hover { background: rgba(0,210,255,0.1); color: var(--cyan); border-color: var(--cyan); }
+        .nav-btn:disabled { opacity: 0.3; cursor: default; }
+        .nav-btn:disabled:hover { background: var(--surface); color: var(--text-dim); border-color: var(--border); }
+
+        #address-bar-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0 12px;
+            transition: border-color 0.2s;
+            height: 34px;
+        }
+        #address-bar-wrap:focus-within { border-color: var(--cyan); box-shadow: 0 0 0 2px rgba(0,210,255,0.15); }
+
+        #address-bar-wrap svg { flex-shrink: 0; opacity: 0.5; margin-right: 8px; }
+
+        #address-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: 13px;
+            font-family: inherit;
+        }
+        #address-input::placeholder { color: var(--text-dim); }
+
+        #go-btn {
+            background: linear-gradient(135deg, var(--cyan), var(--magenta));
+            border: none;
+            color: #fff;
+            border-radius: 8px;
+            padding: 0 16px;
+            height: 34px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: opacity 0.15s;
+            flex-shrink: 0;
+        }
+        #go-btn:hover { opacity: 0.85; }
+
+        /* ── Status Bar ── */
+        #status-bar {
+            height: 22px;
+            background: rgba(2,6,23,0.7);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            font-size: 11px;
+            color: var(--text-dim);
+            flex-shrink: 0;
+            gap: 8px;
+        }
+        #status-indicator {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--text-dim);
+            flex-shrink: 0;
+            transition: background 0.3s;
+        }
+        #status-indicator.loading { background: var(--cyan); animation: pulse 1s infinite; }
+        #status-indicator.ready   { background: #22c55e; }
+        #status-indicator.error   { background: #f87171; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        /* ── Home Screen ── */
+        #home-screen {
+            position: absolute;
+            inset: 56px 0 0 0; /* below toolbar */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            padding: 40px 20px;
+            background: var(--bg);
+            z-index: 5;
+        }
+        #home-screen h1 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--cyan), var(--magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        #home-screen p { color: var(--text-dim); font-size: 13px; text-align: center; max-width: 360px; line-height: 1.6; }
+
+        .quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            max-width: 480px;
+        }
+        .quick-link {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 16px;
+            font-size: 12px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.15s;
+            text-decoration: none;
+        }
+        .quick-link:hover { background: rgba(0,210,255,0.1); border-color: var(--cyan); color: var(--cyan); }
+
+        #setup-notice {
+            background: rgba(0,210,255,0.08);
+            border: 1px solid rgba(0,210,255,0.3);
+            border-radius: var(--radius);
+            padding: 14px 20px;
+            font-size: 12px;
+            color: var(--cyan);
+            max-width: 420px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        /* ── Browser Frame ── */
+        #browser-frame {
+            flex: 1;
+            border: none;
+            width: 100%;
+            background: #fff;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Toolbar -->
+<div id="toolbar">
+    <button class="nav-btn" id="btn-back" title="Back" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="nav-btn" id="btn-forward" title="Forward" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="nav-btn" id="btn-reload" title="Reload">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <div id="address-bar-wrap">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="currentColor" stroke-width="2"/></svg>
+        <input id="address-input" type="text" placeholder="Search or enter a URL…" autocomplete="off" spellcheck="false" />
+    </div>
+
+    <button id="go-btn">Go</button>
+</div>
+
+<!-- Status Bar -->
+<div id="status-bar">
+    <div id="status-indicator"></div>
+    <span id="status-text">Setting up proxy…</span>
+</div>
+
+<!-- Home Screen -->
+<div id="home-screen">
+    <h1>🌐 Web Browser</h1>
+    <p>Powered by Scramjet — browse the web directly from Itchy Scritchy.</p>
+    <div id="setup-notice">⏳ Setting up proxy service worker…</div>
+    <div class="quick-links" id="quick-links" style="display:none">
+        <a class="quick-link" href="#" data-url="https://google.com">Google</a>
+        <a class="quick-link" href="#" data-url="https://youtube.com">YouTube</a>
+        <a class="quick-link" href="#" data-url="https://wikipedia.org">Wikipedia</a>
+        <a class="quick-link" href="#" data-url="https://github.com">GitHub</a>
+        <a class="quick-link" href="#" data-url="https://reddit.com">Reddit</a>
+        <a class="quick-link" href="#" data-url="https://twitch.tv">Twitch</a>
+    </div>
+</div>
+
+<!-- Proxied Content -->
+<iframe id="browser-frame" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals allow-pointer-lock"></iframe>
+
+<script type="module">
+    import { BareMuxConnection } from '/games/proxy/baremux.js';
+
+    const addressInput = document.getElementById('address-input');
+    const browserFrame = document.getElementById('browser-frame');
+    const homeScreen   = document.getElementById('home-screen');
+    const setupNotice  = document.getElementById('setup-notice');
+    const quickLinks   = document.getElementById('quick-links');
+    const statusDot    = document.getElementById('status-indicator');
+    const statusText   = document.getElementById('status-text');
+    const btnBack      = document.getElementById('btn-back');
+    const btnForward   = document.getElementById('btn-forward');
+    const btnReload    = document.getElementById('btn-reload');
+
+    const SCRAMJET_PREFIX = '/games/proxy/scramjet/';
+
+    // ── Codec (plain = encodeURIComponent) ──
+    const encode = url => encodeURIComponent(url);
+    const decode = enc => { try { return decodeURIComponent(enc); } catch { return enc; } };
+
+    // ── History stack ──
+    const history = [];
+    let histIdx = -1;
+
+    function setStatus(type, msg) {
+        statusDot.className = type;
+        statusText.textContent = msg;
+    }
+
+    function navigate(url) {
+        if (!url) return;
+        if (!/^https?:\/\//i.test(url)) {
+            // If it looks like a domain, add https; otherwise google-search it
+            if (/^[a-z0-9-]+(\.[a-z]{2,})/i.test(url)) url = 'https://' + url;
+            else url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+        }
+        addressInput.value = url;
+
+        // Push to history
+        if (histIdx < history.length - 1) history.splice(histIdx + 1);
+        history.push(url);
+        histIdx = history.length - 1;
+        updateNavBtns();
+
+        setStatus('loading', 'Loading…');
+        homeScreen.style.display = 'none';
+        browserFrame.style.display = 'block';
+        browserFrame.src = SCRAMJET_PREFIX + encode(url);
+    }
+
+    function updateNavBtns() {
+        btnBack.disabled    = histIdx <= 0;
+        btnForward.disabled = histIdx >= history.length - 1;
+    }
+
+    btnBack.addEventListener('click', () => {
+        if (histIdx > 0) { histIdx--; updateNavBtns(); loadHistEntry(); }
+    });
+    btnForward.addEventListener('click', () => {
+        if (histIdx < history.length - 1) { histIdx++; updateNavBtns(); loadHistEntry(); }
+    });
+    function loadHistEntry() {
+        const url = history[histIdx];
+        addressInput.value = url;
+        setStatus('loading', 'Loading…');
+        homeScreen.style.display = 'none';
+        browserFrame.style.display = 'block';
+        browserFrame.src = SCRAMJET_PREFIX + encode(url);
+    }
+
+    btnReload.addEventListener('click', () => {
+        if (browserFrame.style.display === 'block') {
+            setStatus('loading', 'Reloading…');
+            browserFrame.contentWindow?.location.reload();
+        }
+    });
+
+    browserFrame.addEventListener('load', () => {
+        try {
+            const loc = browserFrame.contentWindow?.location?.href;
+            if (loc && loc !== 'about:blank') {
+                const pathname = new URL(loc).pathname;
+                if (pathname.startsWith(SCRAMJET_PREFIX)) {
+                    const decoded = decode(pathname.slice(SCRAMJET_PREFIX.length));
+                    if (decoded) {
+                        addressInput.value = decoded;
+                        setStatus('ready', decoded);
+                        return;
+                    }
+                }
+            }
+        } catch { /* cross-origin */ }
+        setStatus('ready', 'Ready');
+    });
+
+    // ── Address bar ──
+    document.getElementById('go-btn').addEventListener('click', () => navigate(addressInput.value.trim()));
+    addressInput.addEventListener('keydown', e => { if (e.key === 'Enter') navigate(addressInput.value.trim()); });
+
+    // ── Quick links ──
+    document.querySelectorAll('.quick-link').forEach(a => {
+        a.addEventListener('click', e => { e.preventDefault(); navigate(a.dataset.url); });
+    });
+
+    // ── Setup ──
+    async function setup() {
+        setStatus('loading', 'Registering proxy service worker…');
+
+        try {
+            // 1. Register Scramjet service worker
+            const swReg = await navigator.serviceWorker.register('/games/proxy/sw.js', {
+                scope: SCRAMJET_PREFIX,
+            });
+            await navigator.serviceWorker.ready;
+
+            // 2. Set up BareMux transport
+            const conn = new BareMuxConnection('/games/proxy/baremux.worker.js');
+            await conn.setManualTransport(`
+                class HttpBareV3 {
+                    constructor(serverUrl) { this.server = serverUrl; }
+                    async request(remote, method, body, headers, signal) {
+                        const port = remote.port || (remote.protocol === 'https:' ? '443' : '80');
+                        const bareHdrs = {
+                            'x-bare-host': remote.hostname,
+                            'x-bare-port': String(port),
+                            'x-bare-protocol': remote.protocol,
+                            'x-bare-path': remote.pathname + remote.search,
+                            'x-bare-headers': JSON.stringify(
+                                Object.fromEntries(Object.entries(headers || {}).map(([k,v]) => [k, Array.isArray(v) ? v : [v]]))
+                            ),
+                            'x-bare-forward-headers': JSON.stringify([]),
+                        };
+                        const res = await fetch(this.server, {
+                            method,
+                            headers: bareHdrs,
+                            body: ['GET','HEAD'].includes(method.toUpperCase()) ? null : body,
+                            signal,
+                        });
+                        const status = parseInt(res.headers.get('x-bare-status') || String(res.status));
+                        const statusText = res.headers.get('x-bare-status-text') || '';
+                        const responseHeaders = JSON.parse(res.headers.get('x-bare-headers') || '{}');
+                        return { status, statusText, headers: responseHeaders, body: res.body };
+                    }
+                    connect(remote, origin, protocols, reqHeaders, onOpen, onMsg, onClose, onError) {
+                        const ws = new WebSocket(remote.href, protocols);
+                        ws.binaryType = 'arraybuffer';
+                        ws.onopen  = () => onOpen('');
+                        ws.onmessage = e => onMsg(e.data);
+                        ws.onclose   = e => onClose(e.code, e.reason);
+                        ws.onerror   = e => onError(e.message || 'WebSocket error');
+                        return [data => ws.send(data), (code, reason) => ws.close(code, reason)];
+                    }
+                }
+                return [HttpBareV3, 'HttpBareV3'];
+            `, ['/bare/v3/']);
+
+            // Ready!
+            setStatus('ready', 'Proxy ready — enter a URL above');
+            setupNotice.textContent = '✅ Proxy ready! Enter a URL or click a quick link.';
+            setupNotice.style.background  = 'rgba(34,197,94,0.08)';
+            setupNotice.style.borderColor = 'rgba(34,197,94,0.3)';
+            setupNotice.style.color       = '#22c55e';
+            quickLinks.style.display = 'flex';
+
+        } catch (err) {
+            console.error('[Proxy] Setup error:', err);
+            setStatus('error', 'Proxy setup failed');
+            setupNotice.textContent = '❌ Proxy failed to set up: ' + err.message;
+            setupNotice.style.background  = 'rgba(248,113,113,0.08)';
+            setupNotice.style.borderColor = 'rgba(248,113,113,0.3)';
+            setupNotice.style.color       = '#f87171';
+        }
+    }
+
+    setup();
+</script>
+</body>
+</html>

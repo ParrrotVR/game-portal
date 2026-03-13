@@ -383,6 +383,6 @@ gameIframe.addEventListener('load', () => {
     hideLoadingStatus();
 });
 
-console.log('🎮 Game Portal initialized successfully!');
+console.log('🎮 Itchy Scritchy initialized successfully!');
 console.log('💾 Game saves are automatically preserved via localStorage');
-console.log('%c🔖 Portal Version: 1.1.5 (2026-03-14)', 'color: #00ff99; font-weight: bold; font-size: 14px;');
+console.log('%c🔖 Portal Version: 1.1.6 (2026-03-14)', 'color: #00ff99; font-weight: bold; font-size: 14px;');
