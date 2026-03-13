@@ -385,4 +385,4 @@ gameIframe.addEventListener('load', () => {
 
 console.log('🎮 Itchy Scritchy initialized successfully!');
 console.log('💾 Game saves are automatically preserved via localStorage');
-console.log('%c🔖 Portal Version: 1.1.7 (2026-03-14)', 'color: #00ff99; font-weight: bold; font-size: 14px;');
+console.log('%c🔖 Portal Version: 1.1.8 (2026-03-14)', 'color: #00ff99; font-weight: bold; font-size: 14px;');

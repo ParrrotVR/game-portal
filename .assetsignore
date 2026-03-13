@@ -9,3 +9,4 @@ functions/
 _worker.js
 temp_proxy/
 games/outhold/index.pck
+games/scritchyscratchy/Build/WebGL.wasm.br

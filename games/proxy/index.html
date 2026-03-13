@@ -235,8 +235,9 @@
 <!-- Proxied Content -->
 <iframe id="browser-frame" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals allow-pointer-lock"></iframe>
 
+<script src="/games/proxy/baremux.js"></script>
 <script type="module">
-    import { BareMuxConnection } from '/games/proxy/baremux.js';
+    const BareMuxConnection = window.BareMux.default;
 
     const addressInput = document.getElementById('address-input');
     const browserFrame = document.getElementById('browser-frame');

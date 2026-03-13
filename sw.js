@@ -1,4 +1,4 @@
-const CACHE_NAME = 'game-portal-v17'; // Streaming SW assembly + optimized probe order v1.1.4
+const CACHE_NAME = 'game-portal-v18'; // Streaming SW assembly + optimized probe order v1.1.4
 const DATA_EXTENSIONS = ['.pck', '.wasm', '.data', '.unityweb', '.bundle'];
 
 self.addEventListener('install', (event) => self.skipWaiting());
