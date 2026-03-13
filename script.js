@@ -203,6 +203,8 @@ const clearCacheBtn = document.getElementById('clear-cache-btn');
 const loadingStatus = document.getElementById('loading-status');
 
 clearCacheBtn.addEventListener('click', async () => {
+    const confirmed = confirm('⚠️ This will delete all cached game files and saves.\n\nAre you sure you want to reset the portal?');
+    if (!confirmed) return;
     // 1. Clear game-related localStorage data
     Object.keys(localStorage).forEach(key => {
         if (key.startsWith('yandex-game-') || key.includes('Unity') || key.includes('pvz') || key.includes('epic')) {
@@ -277,5 +279,5 @@ gameIframe.addEventListener('load', () => {
 
 console.log('🎮 Game Portal initialized successfully!');
 console.log('💾 Game saves are automatically preserved via localStorage');
-console.log('%c🔖 Portal Version: 1.0.3 (2026-03-13)', 'color: #00ff99; font-weight: bold; font-size: 14px;');
+console.log('%c🔖 Portal Version: 1.0.4 (2026-03-13)', 'color: #00ff99; font-weight: bold; font-size: 14px;');
 
