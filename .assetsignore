@@ -7,3 +7,5 @@ node_modules/
 src/
 functions/
 _worker.js
+temp_proxy/
+games/outhold/index.pck
