@@ -1,4 +1,4 @@
-const CACHE_NAME = 'game-portal-v11'; // Bump: fixed Total Incremental War COI headers v1.0.7
+const CACHE_NAME = 'game-portal-v12'; // Bump: added SharedArrayBuffer compatibility patch v1.0.8
 const DATA_EXTENSIONS = ['.pck', '.wasm', '.data', '.unityweb', '.bundle'];
 
 self.addEventListener('install', (event) => self.skipWaiting());
