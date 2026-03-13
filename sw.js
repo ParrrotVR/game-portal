@@ -1,4 +1,4 @@
-const CACHE_NAME = 'game-portal-v9'; // Bump: domain-fix v2 + portal v1.0.5
+const CACHE_NAME = 'game-portal-v10'; // Bump: added Total Incremental War + audio fix v1.0.6
 const DATA_EXTENSIONS = ['.pck', '.wasm', '.data', '.unityweb', '.bundle'];
 
 self.addEventListener('install', (event) => self.skipWaiting());

@@ -95,8 +95,9 @@ function closeGame() {
 
     setTimeout(() => {
         gameOverlay.style.display = 'none';
-        // Keep iframe src to preserve game state
-        // gameIframe.src = '';
+        // Reset iframe src to stop all game audio and free memory.
+        // Game saves persist in localStorage so progress is not lost.
+        gameIframe.src = '';
         document.body.style.overflow = '';
     }, 300);
 }
@@ -279,5 +280,5 @@ gameIframe.addEventListener('load', () => {
 
 console.log('🎮 Game Portal initialized successfully!');
 console.log('💾 Game saves are automatically preserved via localStorage');
-console.log('%c🔖 Portal Version: 1.0.5 (2026-03-13)', 'color: #00ff99; font-weight: bold; font-size: 14px;');
+console.log('%c🔖 Portal Version: 1.0.6 (2026-03-13)', 'color: #00ff99; font-weight: bold; font-size: 14px;');
 
