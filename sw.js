@@ -1,4 +1,4 @@
-const CACHE_NAME = 'game-portal-v8'; // Force cache wipe - COOP/COEP headers added
+const CACHE_NAME = 'game-portal-v9'; // Bump: domain-fix v2 + portal v1.0.5
 const DATA_EXTENSIONS = ['.pck', '.wasm', '.data', '.unityweb', '.bundle'];
 
 self.addEventListener('install', (event) => self.skipWaiting());
