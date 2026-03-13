@@ -14,6 +14,21 @@
 </head>
 
 <body>
+    <!-- Password Gate -->
+    <div id="pw-gate" class="pw-gate">
+        <div class="pw-modal">
+            <div class="pw-logo">🎮</div>
+            <h1 class="pw-title">Game Portal</h1>
+            <p class="pw-subtitle">Enter password to access</p>
+            <div class="pw-input-wrap">
+                <input type="password" id="pw-input" class="pw-input" placeholder="Password" maxlength="64" autocomplete="off" />
+            </div>
+            <button id="pw-submit" class="pw-btn">Enter</button>
+            <p id="pw-error" class="pw-error"></p>
+            <p id="pw-lockout" class="pw-lockout"></p>
+        </div>
+    </div>
+
     <!-- Background Image with Overlay -->
     <div class="bg"></div>
 

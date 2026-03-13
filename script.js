@@ -1,21 +1,116 @@
-// Ensure the page is cross-origin isolated so games using SharedArrayBuffer work.
-// The SW adds COOP/COEP to navigation responses, but only on the NEXT load.
-// This one-time reload triggers that interception.
-if (!window.crossOriginIsolated && 'serviceWorker' in navigator) {
-    if (!sessionStorage.getItem('coi-reload')) {
-        sessionStorage.setItem('coi-reload', '1');
-        window.location.reload();
-    }
-}
+// ── Password Gate ─────────────────────────────────────────────────────────────
+(function () {
+    const HASH = 'd9fd60a8cf992ec3d554ec2df8dd4cb345e77de7ecb4df4772920897b1d51bc5';
+    const MAX_ATTEMPTS = 5;
+    const LOCKOUT_MS   = 15 * 60 * 1000;
 
-// Register Service Worker for Split File Reassembly
-if ('serviceWorker' in navigator) {
+    const gate     = document.getElementById('pw-gate');
+    if (!gate) return;
+
+    if (localStorage.getItem('pw-unlocked') === '1') { gate.classList.add('hidden'); return; }
+
+    const input    = document.getElementById('pw-input');
+    const btn      = document.getElementById('pw-submit');
+    const errorEl  = document.getElementById('pw-error');
+    const lockoutEl= document.getElementById('pw-lockout');
+
+    async function sha256(str) {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
+    const getAttempts   = () => parseInt(localStorage.getItem('pw-attempts')    || '0', 10);
+    const getLockoutAt  = () => parseInt(localStorage.getItem('pw-lockout-time') || '0', 10);
+    const isLocked      = () => { const t = getLockoutAt(); return t && Date.now() < t + LOCKOUT_MS; };
+    const remainingMs   = () => (getLockoutAt() + LOCKOUT_MS) - Date.now();
+
+    let countdownTimer = null;
+    function startCountdown() {
+        if (countdownTimer) clearInterval(countdownTimer);
+        btn.disabled = input.disabled = true;
+        function tick() {
+            const rem = remainingMs();
+            if (rem <= 0) {
+                clearInterval(countdownTimer);
+                localStorage.removeItem('pw-lockout-time');
+                localStorage.removeItem('pw-attempts');
+                btn.disabled = input.disabled = false;
+                errorEl.textContent = lockoutEl.textContent = '';
+                input.focus();
+                return;
+            }
+            const m = String(Math.floor(rem / 60000)).padStart(2,'0');
+            const s = String(Math.floor((rem % 60000) / 1000)).padStart(2,'0');
+            lockoutEl.textContent = `Too many attempts. Try again in ${m}:${s}`;
+        }
+        tick();
+        countdownTimer = setInterval(tick, 1000);
+    }
+
+    if (isLocked()) {
+        errorEl.textContent = 'Too many failed attempts.';
+        startCountdown();
+    } else {
+        input.focus();
+    }
+
+    async function handleSubmit() {
+        if (isLocked() || !input.value.trim()) return;
+        const hash = await sha256(input.value.trim());
+        if (hash === HASH) {
+            localStorage.setItem('pw-unlocked', '1');
+            localStorage.removeItem('pw-attempts');
+            localStorage.removeItem('pw-lockout-time');
+            gate.style.animation = 'pwFadeOut 0.3s ease forwards';
+            setTimeout(() => gate.classList.add('hidden'), 320);
+        } else {
+            const attempts = getAttempts() + 1;
+            localStorage.setItem('pw-attempts', attempts);
+            input.value = '';
+            input.classList.add('shake');
+            setTimeout(() => input.classList.remove('shake'), 400);
+            if (attempts >= MAX_ATTEMPTS) {
+                localStorage.setItem('pw-lockout-time', Date.now());
+                errorEl.textContent = 'Too many failed attempts.';
+                startCountdown();
+            } else {
+                const left = MAX_ATTEMPTS - attempts;
+                errorEl.textContent = `Incorrect password. ${left} attempt${left !== 1 ? 's' : ''} remaining.`;
+                input.focus();
+            }
+        }
+    }
+
+    btn.addEventListener('click', handleSubmit);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') handleSubmit(); });
+})();
+
+// ── Service Worker + Cross-Origin Isolation ────────────────────────────────────
+// The SW injects COOP/COEP headers on navigation responses (needed for SharedArrayBuffer).
+// On first visit the SW isn't active yet, so we wait for `controllerchange` (fires when
+// SW activates via skipWaiting+clients.claim), then reload ONCE so the SW can intercept.
+(function () {
+    if (!('serviceWorker' in navigator)) return;
+
+    if (window.crossOriginIsolated) {
+        // Already isolated — clear the one-shot flag and just register normally.
+        sessionStorage.removeItem('coi-reloaded');
+    } else {
+        // Reload once after the SW gains control of this page.
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!sessionStorage.getItem('coi-reloaded')) {
+                sessionStorage.setItem('coi-reloaded', '1');
+                window.location.reload();
+            }
+        });
+    }
+
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
             .then(reg => console.log('SW Registered!', reg))
             .catch(err => console.error('SW Registration Failed:', err));
     });
-}
+})();
 
 // 3D Card Tilt Effect
 const gameCards = document.querySelectorAll('.game-card');
@@ -290,4 +385,4 @@ gameIframe.addEventListener('load', () => {
 
 console.log('🎮 Game Portal initialized successfully!');
 console.log('💾 Game saves are automatically preserved via localStorage');
-console.log('%c🔖 Portal Version: 1.1.4 (2026-03-13)', 'color: #00ff99; font-weight: bold; font-size: 14px;');
+console.log('%c🔖 Portal Version: 1.1.5 (2026-03-14)', 'color: #00ff99; font-weight: bold; font-size: 14px;');
