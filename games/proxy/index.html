@@ -349,7 +349,26 @@
             const swReg = await navigator.serviceWorker.register('/games/proxy/sw.js', {
                 scope: SCRAMJET_PREFIX,
             });
-            await navigator.serviceWorker.ready;
+            // Wait for THIS specific scramjet SW to become active.
+            // navigator.serviceWorker.ready resolves with the *portal* SW (scope '/'),
+            // not scramjet's SW — so we must wait on the registration directly.
+            if (!swReg.active) {
+                await new Promise(resolve => {
+                    const sw = swReg.installing || swReg.waiting;
+                    if (sw) {
+                        sw.addEventListener('statechange', function h() {
+                            if (sw.state === 'activated') { sw.removeEventListener('statechange', h); resolve(); }
+                        });
+                    } else {
+                        swReg.addEventListener('updatefound', () => {
+                            const newSW = swReg.installing;
+                            newSW.addEventListener('statechange', function h() {
+                                if (newSW.state === 'activated') { newSW.removeEventListener('statechange', h); resolve(); }
+                            });
+                        });
+                    }
+                });
+            }
 
             // 2. Set up BareMux transport
             const conn = new BareMuxConnection('/games/proxy/baremux.worker.js');
