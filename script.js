@@ -290,4 +290,4 @@ gameIframe.addEventListener('load', () => {
 
 console.log('🎮 Game Portal initialized successfully!');
 console.log('💾 Game saves are automatically preserved via localStorage');
-console.log('%c🔖 Portal Version: 1.1.3 (2026-03-13)', 'color: #00ff99; font-weight: bold; font-size: 14px;');
+console.log('%c🔖 Portal Version: 1.1.4 (2026-03-13)', 'color: #00ff99; font-weight: bold; font-size: 14px;');

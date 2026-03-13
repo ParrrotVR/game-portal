@@ -78,8 +78,8 @@ export default {
             // Candidates for folder names
             const base = filename.includes('.') ? filename.substring(0, filename.lastIndexOf('.')) : filename;
             const subfolders = [
+                'index_parts/',          // TIW and standard Godot web exports — try first
                 '', 
-                'index_parts/', 
                 'index.pck_parts/', 
                 'index.wasm_parts/', 
                 'index.side_parts/',
@@ -108,13 +108,18 @@ export default {
                             const testRes = await env.ASSETS.fetch(new Request(testUrl));
                             
                             if (testRes.status === 200 && !isHTML(testRes)) {
-                                // Part 1 found! Stream assembly.
+                                // Part 1 found! Stream assembly, reusing the probe response body.
                                 const { readable, writable } = new TransformStream();
+                                const pipeOpts = { preventClose: true };
                                 
                                 ctx.waitUntil((async () => {
                                     const writer = writable.getWriter();
+                                    const pipe = (body) => body.pipeTo(new WritableStream({
+                                        write(chunk) { return writer.write(chunk); }
+                                    }), pipeOpts);
                                     try {
                                         let currentSegInt = seg === '' ? 0 : parseInt(seg.replace('part', '').replace('.', ''));
+                                        let firstPart = testRes; // reuse already-fetched probe body
                                         
                                         while (true) {
                                             const currentSegStr = currentSegInt === 0 ? '' : `part${currentSegInt}.`;
@@ -123,18 +128,42 @@ export default {
                                             let i = 1;
                                             let segmentFound = false;
                                             while (true) {
-                                                const pPath = `${currentPrefix}${i.toString().padStart(pad.length, '0')}`;
-                                                const pUrl = new URL(pPath, url.origin).toString();
-                                                const pRes = await env.ASSETS.fetch(new Request(pUrl));
+                                                let pRes;
+                                                if (firstPart) {
+                                                    // Use the already-fetched probe body for part 1
+                                                    pRes = firstPart;
+                                                    firstPart = null;
+                                                } else {
+                                                    // Fetch remaining parts in parallel batches of 5
+                                                    const batchSize = 5;
+                                                    const batch = [];
+                                                    for (let b = 0; b < batchSize; b++) {
+                                                        const pPath = `${currentPrefix}${(i + b).toString().padStart(pad.length, '0')}`;
+                                                        batch.push(env.ASSETS.fetch(new Request(new URL(pPath, url.origin).toString())));
+                                                    }
+                                                    const results = await Promise.all(batch);
+                                                    let batchOk = true;
+                                                    for (const res of results) {
+                                                        if (res.status === 200 && !isHTML(res)) {
+                                                            segmentFound = true;
+                                                            await pipe(res.body);
+                                                            i++;
+                                                        } else {
+                                                            batchOk = false;
+                                                            break;
+                                                        }
+                                                        if (i > 1000) break;
+                                                    }
+                                                    if (!batchOk || i > 1000) break;
+                                                    continue;
+                                                }
                                                 
                                                 if (pRes.status === 200 && !isHTML(pRes)) {
                                                     segmentFound = true;
-                                                    await pRes.body.pipeTo(new WritableStream({
-                                                        write(chunk) { return writer.write(chunk); }
-                                                    }), { preventClose: true });
+                                                    await pipe(pRes.body);
                                                     i++;
                                                 } else {
-                                                    break; 
+                                                    break;
                                                 }
                                                 if (i > 1000) break;
                                             }

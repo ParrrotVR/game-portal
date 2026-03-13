@@ -1,4 +1,4 @@
-const CACHE_NAME = 'game-portal-v16'; // Add COOP/COEP to navigation responses for crossOriginIsolation v1.1.2
+const CACHE_NAME = 'game-portal-v17'; // Streaming SW assembly + optimized probe order v1.1.4
 const DATA_EXTENSIONS = ['.pck', '.wasm', '.data', '.unityweb', '.bundle'];
 
 self.addEventListener('install', (event) => self.skipWaiting());
@@ -71,8 +71,8 @@ async function assembleSplitFile(baseUrl) {
     // Candidates for folder names
     const base = filename.includes('.') ? filename.substring(0, filename.lastIndexOf('.')) : filename;
     const subfolders = [
+        'index_parts/',          // TIW and standard Godot web exports — try first
         '', 
-        'index_parts/', 
         'index.pck_parts/', 
         'index.wasm_parts/', 
         'index.side_parts/',
@@ -100,44 +100,50 @@ async function assembleSplitFile(baseUrl) {
                     try {
                         const res = await fetch(testUrl, { method: 'HEAD' });
                         if (res.ok && !isHTML(res)) {
-                            // Assembly sequence
-                            const parts = [];
-                            let currentSegInt = seg === '' ? 0 : parseInt(seg.replace('part', '').replace('.', ''));
-
-                            while (true) {
-                                const currentSegStr = currentSegInt === 0 ? '' : `part${currentSegInt}.`;
-                                const currentPrefix = `${dirNormalized}${folder}${name}.${currentSegStr}part`;
-                                
-                                let i = 1;
-                                let segmentFound = false;
-                                while (true) {
-                                    const pUrl = `${urlObj.origin}${currentPrefix}${i.toString().padStart(pad.length, '0')}`;
-                                    const pRes = await fetch(pUrl);
-                                    if (pRes.ok && !isHTML(pRes)) {
-                                        segmentFound = true;
-                                        parts.push(await pRes.blob());
-                                        i++;
-                                    } else {
-                                        break;
+                            // Stream parts directly rather than accumulating blobs
+                            const mimeType = getMimeType(baseUrl);
+                            const stream = new ReadableStream({
+                                async start(controller) {
+                                    try {
+                                        let currentSegInt = seg === '' ? 0 : parseInt(seg.replace('part', '').replace('.', ''));
+                                        while (true) {
+                                            const currentSegStr = currentSegInt === 0 ? '' : `part${currentSegInt}.`;
+                                            const currentPrefix = `${dirNormalized}${folder}${name}.${currentSegStr}part`;
+                                            let i = 1;
+                                            let segmentFound = false;
+                                            while (true) {
+                                                const pUrl = `${urlObj.origin}${currentPrefix}${i.toString().padStart(pad.length, '0')}`;
+                                                const pRes = await fetch(pUrl);
+                                                if (pRes.ok && !isHTML(pRes)) {
+                                                    segmentFound = true;
+                                                    const reader = pRes.body.getReader();
+                                                    while (true) {
+                                                        const { done, value } = await reader.read();
+                                                        if (done) break;
+                                                        controller.enqueue(value);
+                                                    }
+                                                    i++;
+                                                } else { break; }
+                                                if (i > 1000) break;
+                                            }
+                                            if (currentSegInt === 0 || !segmentFound) break;
+                                            currentSegInt++;
+                                        }
+                                    } catch (e) {
+                                    } finally {
+                                        controller.close();
                                     }
-                                    if (i > 1000) break;
                                 }
-                                if (currentSegInt === 0 || !segmentFound) break;
-                                currentSegInt++;
-                            }
-
-                            if (parts.length > 0) {
-                                const blob = new Blob(parts, { type: getMimeType(baseUrl) });
-                                return new Response(blob, {
-                                    headers: {
-                                        'Content-Type': getMimeType(baseUrl),
-                                        'Cross-Origin-Embedder-Policy': 'require-corp',
-                                        'Cross-Origin-Opener-Policy': 'same-origin',
-                                        'Access-Control-Allow-Origin': '*',
-                                        'X-Assembled': 'true'
-                                    }
-                                });
-                            }
+                            });
+                            return new Response(stream, {
+                                headers: {
+                                    'Content-Type': mimeType,
+                                    'Cross-Origin-Embedder-Policy': 'require-corp',
+                                    'Cross-Origin-Opener-Policy': 'same-origin',
+                                    'Access-Control-Allow-Origin': '*',
+                                    'X-Assembled': 'true'
+                                }
+                            });
                         }
                     } catch (e) {}
                 }
