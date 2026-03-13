@@ -114,6 +114,12 @@ export default {
             if (low.endsWith('.wasm')) newHeaders.set('Content-Type', 'application/wasm');
             else if (low.endsWith('.js')) newHeaders.set('Content-Type', 'application/javascript');
             else if (low.endsWith('.pck') || low.endsWith('.data')) newHeaders.set('Content-Type', 'application/octet-stream');
+            // Unity .br files — must be served as raw bytes; browser must NOT auto-decompress them
+            // because Unity's loader handles Brotli decompression internally
+            else if (low.includes('.br')) {
+                newHeaders.set('Content-Type', 'application/octet-stream');
+                newHeaders.delete('Content-Encoding');
+            }
             
             return new Response(response.body, {
                 status: response.status,
@@ -133,7 +139,8 @@ export default {
         const isDataFile = (p) => {
             const low = p.toLowerCase();
             return low.endsWith('.pck') || low.endsWith('.wasm') || low.endsWith('.data') || 
-                   low.endsWith('.unityweb') || low.endsWith('.bundle') || low.includes('.wasm.br');
+                   low.endsWith('.unityweb') || low.endsWith('.bundle') ||
+                   low.includes('.wasm.br') || low.includes('.framework.js.br') || low.includes('.data.br');
         };
 
         const isHTML = (res) => res.headers.get('Content-Type')?.toLowerCase().includes('text/html');
