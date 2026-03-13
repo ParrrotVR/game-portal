@@ -1,4 +1,4 @@
-const CACHE_NAME = 'game-portal-v14'; // Bump: aggressive SharedArrayBuffer blocking v1.1.0
+const CACHE_NAME = 'game-portal-v15'; // Revert coi-fix damage, restore threads v1.1.1 v1.1.0
 const DATA_EXTENSIONS = ['.pck', '.wasm', '.data', '.unityweb', '.bundle'];
 
 self.addEventListener('install', (event) => self.skipWaiting());
